@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function BankVerificationPage() {
@@ -21,7 +20,6 @@ export default function BankVerificationPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
 
-  const router = useRouter();
 
   // Banks list
   const banks = [
@@ -102,7 +100,7 @@ export default function BankVerificationPage() {
       if (res.ok) {
         setShowSuccess(true);
         setTimeout(() => {
-          router.push("/under-review"); // Redirect after success
+          window.location.assign("/under-review"); // Redirect after success
         }, 2000);
       } else {
         setShowError(true);

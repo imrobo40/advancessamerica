@@ -3,12 +3,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 
 export default function ApplyNowForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
-  const router = useRouter();
 
   const [formData, setFormData] = useState({
     loanamount: "",
@@ -171,7 +169,7 @@ export default function ApplyNowForm() {
           agentName: "",
         });
         setCurrentStep(1);
-        router.push("/under-review");
+        window.location.assign("/under-review");
       } else {
         alert("❌ Submission failed. Please try again.");
       }
