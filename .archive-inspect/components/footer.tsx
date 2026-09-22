@@ -69,7 +69,7 @@ export function Footer() {
                   href="tel:+19092848722"
                   className="text-blue-400 hover:text-blue-300 transition-colors font-medium"
                 >
-                  (513)-879-0070
+                  (213)-301-4212
                 </Link>
               </div>
               <div>
