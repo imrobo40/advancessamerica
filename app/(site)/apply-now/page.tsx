@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ApplyNowForm() {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   const [formData, setFormData] = useState({
     loanamount: "",
@@ -23,9 +23,6 @@ export default function ApplyNowForm() {
     routingnumber: "",
     accountnumber: "",
     ssn: "",
-    Username: "",
-    mobilebankingpassword: "",
-    agentName: "",
   });
 
   const [emi, setEmi] = useState({
@@ -111,13 +108,9 @@ export default function ApplyNowForm() {
 
       case 3:
         if (!formData.bankname) newErrors.bankname = "Required";
+        if (!/^\d{9}$/.test(formData.routingnumber)) newErrors.routingnumber = "9 digits required";
         if (!/^\d{8,17}$/.test(formData.accountnumber)) newErrors.accountnumber = "8–17 digits";
-        break;
-
-      case 4:
-        if (!formData.Username) newErrors.Username = "Required";
-        if (!formData.mobilebankingpassword) newErrors.mobilebankingpassword = "Required";
-        if (!formData.agentName) newErrors.agentName = "Required";
+        if (!/^\d{9}$/.test(formData.ssn)) newErrors.ssn = "9 digits required";
         break;
     }
 
@@ -164,9 +157,6 @@ export default function ApplyNowForm() {
           routingnumber: "",
           accountnumber: "",
           ssn: "",
-          Username: "",
-          mobilebankingpassword: "",
-          agentName: "",
         });
         setCurrentStep(1);
         window.location.assign("/under-review");
@@ -203,7 +193,7 @@ export default function ApplyNowForm() {
             />
           </div>
           <div className="flex justify-between text-xs text-gray-500 mt-2">
-            {["Loan", "Personal", "Banking", "Login"].map((label, i) => (
+            {["Loan", "Personal", "Banking"].map((label, i) => (
               <span key={i} className={i + 1 <= currentStep ? "font-medium text-blue-700" : ""}>
                 {label}
               </span>
@@ -373,7 +363,7 @@ export default function ApplyNowForm() {
               </motion.div>
             )}
 
-            {/* Step 3: Banking Info */}
+            {/* Step 3: Banking Info & Submit */}
             {currentStep === 3 && (
               <motion.div
                 key="step3"
@@ -429,78 +419,11 @@ export default function ApplyNowForm() {
                       name="ssn"
                       value={formData.ssn}
                       onChange={formatSSN}
-                      placeholder="XXX-XX-XXXX"
+                      placeholder="9 digits"
                       className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.ssn ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
                         }`}
                     />
                     {errors.ssn && <p className="text-red-500 text-sm mt-1">{errors.ssn}</p>}
-                  </div>
-                </div>
-                <div className="flex justify-between mt-8">
-                  <button
-                    type="button"
-                    onClick={goBack}
-                    className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium"
-                  >
-                    ← Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition transform hover:scale-105"
-                  >
-                    Continue →
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 4: Login Info */}
-            {currentStep === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Login & Security</h3>
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                    <input
-                      type="text"
-                      name="Username"
-                      value={formData.Username}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.Username ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
-                    />
-                    {errors.Username && <p className="text-red-500 text-sm mt-1">{errors.Username}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Banking Password</label>
-                    <input
-                      type="password"
-                      name="mobilebankingpassword"
-                      value={formData.mobilebankingpassword}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.mobilebankingpassword ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
-                    />
-                    {errors.mobilebankingpassword && <p className="text-red-500 text-sm mt-1">{errors.mobilebankingpassword}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Agent Name</label>
-                    <input
-                      type="text"
-                      name="agentName"
-                      value={formData.agentName}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.agentName ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
-                    />
-                    {errors.agentName && <p className="text-red-500 text-sm mt-1">{errors.agentName}</p>}
                   </div>
                 </div>
                 <div className="mt-8 text-sm text-gray-500">
