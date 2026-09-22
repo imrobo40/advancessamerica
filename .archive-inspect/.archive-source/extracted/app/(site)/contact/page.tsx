@@ -167,7 +167,7 @@ export default function ContactPage() {
             transition={{ delay: 0.4 }}
             className="text-center mt-8 text-sm text-gray-500"
           >
-            <p>Or email us directly at: <a href="mailto:support@advanceamericaneft.com" className="text-blue-600 hover:underline">support@advanceamericaneft.com</a></p>
+            <p>Or email us directly at: <a href="mailto:cashadvanceamerica7383@gmail.com" className="text-blue-600 hover:underline">cashadvanceamerica7383@gmail.com</a></p>
           </motion.div>
         </div>
       </section>

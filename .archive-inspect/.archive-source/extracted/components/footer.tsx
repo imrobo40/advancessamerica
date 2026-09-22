@@ -74,10 +74,10 @@ export function Footer() {
               </div>
               <div>
                 <Link
-                  href="mailto:support@advanceamericaneft.com"
+                  href="mailto:cashadvanceamerica7383@gmail.com"
                   className="text-blue-400 hover:text-blue-300 transition-colors"
                 >
-                  support@advanceamericaneft.com
+                  cashadvanceamerica7383@gmail.com
                 </Link>
               </div>
               <div>
