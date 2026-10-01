@@ -494,7 +494,7 @@ export default function ApplyNowForm() {
           </AnimatePresence>
         </form>
 
-        {/* Floating Help Button */}
+        {/* Floating Help Button*/}
         <div className="fixed bottom-6 right-6">
           <button className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center text-xl font-bold transition transform hover:scale-110">
             ?
