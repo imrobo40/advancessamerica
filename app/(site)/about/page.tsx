@@ -8,7 +8,7 @@ export default function AboutPage() {
 
   return (
     <main className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
+      {/* Hero Section*/}
       <section className="about-hero-section py-16 bg-white">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="row align-items-start">
