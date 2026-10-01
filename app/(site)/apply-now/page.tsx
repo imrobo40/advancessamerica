@@ -19,6 +19,8 @@ export default function ApplyNowForm() {
     state: "",
     zipcode: "",
     dateofbirth: "",
+    phone: "", // Added
+    email: "", // Added
     bankname: "",
     routingnumber: "",
     accountnumber: "",
@@ -74,6 +76,23 @@ export default function ApplyNowForm() {
     setFormData((prev) => ({ ...prev, dateofbirth: value }));
   };
 
+  const formatPhone = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, "").slice(0, 10);
+    if (value.length >= 6) {
+      value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
+    } else if (value.length >= 3) {
+      value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+    }
+    setFormData((prev) => ({ ...prev, phone: value }));
+    if (errors.phone) {
+      setErrors((prev) => {
+        const newErr = { ...prev };
+        delete newErr.phone;
+        return newErr;
+      });
+    }
+  };
+
   const formatSSN = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     setFormData((prev) => ({ ...prev, ssn: value }));
@@ -104,6 +123,11 @@ export default function ApplyNowForm() {
         if (!formData.state) newErrors.state = "Required";
         if (!/^\d{5}$/.test(formData.zipcode)) newErrors.zipcode = "5-digit ZIP";
         if (!/^\d{2}\/\d{2}\/\d{4}$/.test(formData.dateofbirth)) newErrors.dateofbirth = "MM/DD/YYYY";
+        
+        // Phone & Email Validation
+        const phoneDigits = formData.phone.replace(/\D/g, "");
+        if (phoneDigits.length !== 10) newErrors.phone = "Valid 10-digit phone required";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Valid email required";
         break;
 
       case 3:
@@ -153,6 +177,8 @@ export default function ApplyNowForm() {
           state: "",
           zipcode: "",
           dateofbirth: "",
+          phone: "", // Reset added field
+          email: "", // Reset added field
           bankname: "",
           routingnumber: "",
           accountnumber: "",
@@ -223,8 +249,7 @@ export default function ApplyNowForm() {
                       value={formData.loanamount}
                       onChange={handleChange}
                       placeholder="$2,000 to $15,000"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanamount ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanamount ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.loanamount && <p className="text-red-500 text-sm mt-1">{errors.loanamount}</p>}
                   </div>
@@ -237,8 +262,7 @@ export default function ApplyNowForm() {
                       value={formData.loanduration}
                       onChange={handleChange}
                       placeholder="1–60 months"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanduration ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanduration ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.loanduration && <p className="text-red-500 text-sm mt-1">{errors.loanduration}</p>}
                   </div>
@@ -249,8 +273,7 @@ export default function ApplyNowForm() {
                       name="loanpurpose"
                       value={formData.loanpurpose}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanpurpose ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanpurpose ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     >
                       <option value="">Select Purpose</option>
                       <option value="CREDIT_CARD">Pay off Credit Cards</option>
@@ -297,14 +320,42 @@ export default function ApplyNowForm() {
                       <input
                         type={field.type}
                         name={field.name}
-                        value={formData[field.name]}
+                        value={formData[field.name as keyof typeof formData]}
                         onChange={handleChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors[field.name] ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                          }`}
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors[field.name] ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                       />
                       {errors[field.name] && <p className="text-red-500 text-sm mt-1">{errors[field.name]}</p>}
                     </div>
                   ))}
+
+                  {/* NEW: Email ID Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="you@example.com"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.email ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                  </div>
+
+                  {/* NEW: Phone Number Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={formatPhone}
+                      placeholder="(123) 456-7890"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.phone ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                    />
+                    {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                  </div>
+
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Home Address</label>
                     <input
@@ -312,8 +363,7 @@ export default function ApplyNowForm() {
                       name="homeaddress"
                       value={formData.homeaddress}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.homeaddress ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.homeaddress ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.homeaddress && <p className="text-red-500 text-sm mt-1">{errors.homeaddress}</p>}
                   </div>
@@ -325,8 +375,7 @@ export default function ApplyNowForm() {
                       value={formData.zipcode}
                       onChange={formatZIP}
                       placeholder="12345"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.zipcode ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.zipcode ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.zipcode && <p className="text-red-500 text-sm mt-1">{errors.zipcode}</p>}
                   </div>
@@ -338,8 +387,7 @@ export default function ApplyNowForm() {
                       value={formData.dateofbirth}
                       onChange={handleDateInput}
                       placeholder="MM/DD/YYYY"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.dateofbirth ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.dateofbirth ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.dateofbirth && <p className="text-red-500 text-sm mt-1">{errors.dateofbirth}</p>}
                   </div>
@@ -381,8 +429,7 @@ export default function ApplyNowForm() {
                       name="bankname"
                       value={formData.bankname}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.bankname ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.bankname ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.bankname && <p className="text-red-500 text-sm mt-1">{errors.bankname}</p>}
                   </div>
@@ -394,8 +441,7 @@ export default function ApplyNowForm() {
                       value={formData.routingnumber}
                       onChange={handleChange}
                       placeholder="9 digits"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.routingnumber ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.routingnumber ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.routingnumber && <p className="text-red-500 text-sm mt-1">{errors.routingnumber}</p>}
                   </div>
@@ -407,8 +453,7 @@ export default function ApplyNowForm() {
                       value={formData.accountnumber}
                       onChange={handleChange}
                       placeholder="8–17 digits"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.accountnumber ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.accountnumber ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.accountnumber && <p className="text-red-500 text-sm mt-1">{errors.accountnumber}</p>}
                   </div>
@@ -420,8 +465,7 @@ export default function ApplyNowForm() {
                       value={formData.ssn}
                       onChange={formatSSN}
                       placeholder="9 digits"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.ssn ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"
-                        }`}
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.ssn ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
                     />
                     {errors.ssn && <p className="text-red-500 text-sm mt-1">{errors.ssn}</p>}
                   </div>
