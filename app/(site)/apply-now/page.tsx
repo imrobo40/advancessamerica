@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ApplyNowForm() {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 3; // Changed to 3 steps
 
   const [formData, setFormData] = useState({
     loanamount: "",
@@ -133,10 +133,6 @@ export default function ApplyNowForm() {
         if (!formData.bankname) newErrors.bankname = "Required";
         if (!/^\d{8,17}$/.test(formData.accountnumber)) newErrors.accountnumber = "8–17 digits";
         break;
-
-      case 4:
-        // No specific field validation needed for the Review & Submit step
-        break;
     }
 
     setErrors(newErrors);
@@ -220,7 +216,7 @@ export default function ApplyNowForm() {
             />
           </div>
           <div className="flex justify-between text-xs text-gray-500 mt-2">
-            {["Loan", "Personal", "Banking", "Submit"].map((label, i) => (
+            {["Loan", "Personal", "Banking"].map((label, i) => (
               <span key={i} className={i + 1 <= currentStep ? "font-medium text-blue-700" : ""}>
                 {label}
               </span>
@@ -410,7 +406,7 @@ export default function ApplyNowForm() {
               </motion.div>
             )}
 
-            {/* Step 3: Banking Info */}
+            {/* Step 3: Banking Info & Submit */}
             {currentStep === 3 && (
               <motion.div
                 key="step3"
@@ -469,44 +465,12 @@ export default function ApplyNowForm() {
                     {errors.ssn && <p className="text-red-500 text-sm mt-1">{errors.ssn}</p>}
                   </div>
                 </div>
-                <div className="flex justify-between mt-8">
-                  <button
-                    type="button"
-                    onClick={goBack}
-                    className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium"
-                  >
-                    ← Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition transform hover:scale-105"
-                  >
-                    Continue →
-                  </button>
-                </div>
-              </motion.div>
-            )}
 
-            {/* Step 4: Review & Submit */}
-            {currentStep === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Review & Submit</h3>
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-gray-600">
-                    Please review your information before submitting. By clicking "Submit Application", you agree to our terms and conditions.
-                  </p>
-                </div>
-                <div className="text-sm text-gray-500">
+                <div className="mt-6 text-sm text-gray-500 bg-blue-50 p-4 rounded-lg border border-blue-100">
                   <p>🔐 Your information is encrypted and securely transmitted.</p>
                 </div>
-                <div className="flex justify-between mt-6">
+
+                <div className="flex justify-between mt-8">
                   <button
                     type="button"
                     onClick={goBack}
