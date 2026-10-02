@@ -6,11 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function ApplyNowForm() {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3; // Changed to 3 steps
+  const totalSteps = 3;
 
   const [formData, setFormData] = useState({
-    loanamount: "",
-    loanduration: "",
+    loanamount: "8000", // Fixed value
+    loanduration: "60", // Fixed value
     loanpurpose: "",
     firstname: "",
     lastname: "",
@@ -108,10 +108,7 @@ export default function ApplyNowForm() {
 
     switch (currentStep) {
       case 1:
-        if (!formData.loanamount || isNaN(parseFloat(formData.loanamount)) || parseFloat(formData.loanamount) < 2000 || parseFloat(formData.loanamount) > 15000)
-          newErrors.loanamount = "Enter $2K–$15K";
-        if (!formData.loanduration || parseInt(formData.loanduration) < 1 || parseInt(formData.loanduration) > 60)
-          newErrors.loanduration = "1–60 months";
+        // Loan amount and duration are fixed, so we only validate loan purpose now
         if (!formData.loanpurpose) newErrors.loanpurpose = "Select a purpose";
         break;
 
@@ -164,8 +161,8 @@ export default function ApplyNowForm() {
 
       if (res.ok) {
         setFormData({
-          loanamount: "",
-          loanduration: "",
+          loanamount: "8000",
+          loanduration: "60",
           loanpurpose: "",
           firstname: "",
           lastname: "",
@@ -239,29 +236,29 @@ export default function ApplyNowForm() {
                 <h3 className="text-2xl font-semibold text-gray-800 mb-6">Loan Details</h3>
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Loan Amount</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Loan Amount <span className="text-xs text-gray-500">(Fixed)</span>
+                    </label>
                     <input
                       type="number"
                       name="loanamount"
-                      value={formData.loanamount}
-                      onChange={handleChange}
-                      placeholder="$2,000 to $15,000"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanamount ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                      value="8000"
+                      disabled
+                      className="w-full px-4 py-3 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed border-gray-300"
                     />
-                    {errors.loanamount && <p className="text-red-500 text-sm mt-1">{errors.loanamount}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Loan Duration (Months)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Loan Duration (Months) <span className="text-xs text-gray-500">(Fixed)</span>
+                    </label>
                     <input
                       type="number"
                       name="loanduration"
-                      value={formData.loanduration}
-                      onChange={handleChange}
-                      placeholder="1–60 months"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.loanduration ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
+                      value="60"
+                      disabled
+                      className="w-full px-4 py-3 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed border-gray-300"
                     />
-                    {errors.loanduration && <p className="text-red-500 text-sm mt-1">{errors.loanduration}</p>}
                   </div>
 
                   <div>
