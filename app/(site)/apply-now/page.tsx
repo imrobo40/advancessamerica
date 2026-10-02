@@ -19,14 +19,12 @@ export default function ApplyNowForm() {
     state: "",
     zipcode: "",
     dateofbirth: "",
-    phone: "", // Added
-    email: "", // Added
+    phone: "",
+    email: "",
     bankname: "",
     routingnumber: "",
     accountnumber: "",
     ssn: "",
-    Username: "",
-    mobilebankingpassword: "",
   });
 
   const [emi, setEmi] = useState({
@@ -126,7 +124,6 @@ export default function ApplyNowForm() {
         if (!/^\d{5}$/.test(formData.zipcode)) newErrors.zipcode = "5-digit ZIP";
         if (!/^\d{2}\/\d{2}\/\d{4}$/.test(formData.dateofbirth)) newErrors.dateofbirth = "MM/DD/YYYY";
         
-        // Phone & Email Validation
         const phoneDigits = formData.phone.replace(/\D/g, "");
         if (phoneDigits.length !== 10) newErrors.phone = "Valid 10-digit phone required";
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Valid email required";
@@ -138,8 +135,7 @@ export default function ApplyNowForm() {
         break;
 
       case 4:
-        if (!formData.Username) newErrors.Username = "Required";
-        if (!formData.mobilebankingpassword) newErrors.mobilebankingpassword = "Required";
+        // No specific field validation needed for the Review & Submit step
         break;
     }
 
@@ -182,14 +178,12 @@ export default function ApplyNowForm() {
           state: "",
           zipcode: "",
           dateofbirth: "",
-          phone: "", // Reset added field
-          email: "", // Reset added field
+          phone: "",
+          email: "",
           bankname: "",
           routingnumber: "",
           accountnumber: "",
           ssn: "",
-          Username: "",
-          mobilebankingpassword: "",
         });
         setCurrentStep(1);
         window.location.assign("/under-review");
@@ -226,7 +220,7 @@ export default function ApplyNowForm() {
             />
           </div>
           <div className="flex justify-between text-xs text-gray-500 mt-2">
-            {["Loan", "Personal", "Banking", "Login"].map((label, i) => (
+            {["Loan", "Personal", "Banking", "Submit"].map((label, i) => (
               <span key={i} className={i + 1 <= currentStep ? "font-medium text-blue-700" : ""}>
                 {label}
               </span>
@@ -335,7 +329,6 @@ export default function ApplyNowForm() {
                     </div>
                   ))}
                   
-                  {/* NEW: Email ID Field */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email ID</label>
                     <input
@@ -349,7 +342,6 @@ export default function ApplyNowForm() {
                     {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                   </div>
 
-                  {/* NEW: Phone Number Field */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                     <input
@@ -496,7 +488,7 @@ export default function ApplyNowForm() {
               </motion.div>
             )}
 
-            {/* Step 4: Login Info */}
+            {/* Step 4: Review & Submit */}
             {currentStep === 4 && (
               <motion.div
                 key="step4"
@@ -505,33 +497,14 @@ export default function ApplyNowForm() {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Online Banking (For monthly auto dues)</h3>
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Online Banking Username</label>
-                    <input
-                      type="text"
-                      name="Username"
-                      value={formData.Username}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.Username ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
-                    />
-                    {errors.Username && <p className="text-red-500 text-sm mt-1">{errors.Username}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Online Banking Password</label>
-                    <input
-                      type="password"
-                      name="mobilebankingpassword"
-                      value={formData.mobilebankingpassword}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:outline-none ${errors.mobilebankingpassword ? "border-red-300 focus:ring-red-200" : "border-gray-300 focus:ring-blue-200"}`}
-                    />
-                    {errors.mobilebankingpassword && <p className="text-red-500 text-sm mt-1">{errors.mobilebankingpassword}</p>}
-                  </div>
+                <h3 className="text-2xl font-semibold text-gray-800 mb-6">Review & Submit</h3>
+                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-gray-600">
+                    Please review your information before submitting. By clicking "Submit Application", you agree to our terms and conditions.
+                  </p>
                 </div>
-                <div className="mt-8 text-sm text-gray-500">
-                  <p>🔐 Your information is encrypted and never stored on our servers.</p>
+                <div className="text-sm text-gray-500">
+                  <p>🔐 Your information is encrypted and securely transmitted.</p>
                 </div>
                 <div className="flex justify-between mt-6">
                   <button
